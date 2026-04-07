@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<!-- Pagrindinis puslapis: redaguok tik šį failą (index.html). -->
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promptų anatomija — mokytojams</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #103b5a;    
+            --accent-yellow: #fbd304;   
+            --accent-red: #ff5a5f;      
+            --bg-dark: #071b29;         
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-main: 'Inter', sans-serif;
+            /* Tekstas: kontrastas salėje / projektoriui */
+            --text-bright: #f8fafc;
+            --text-body: #e2e8f0;
+            --text-muted: #cbd5e1;
+            --text-soft: #94a3b8;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+        body { 
+            background-color: var(--bg-dark); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-bright);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            z-index: 1000;
+            padding: 12px 20px;
+            background: var(--accent-yellow);
+            color: #000;
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .skip-link:focus {
+            left: 16px;
+            top: 16px;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--accent-yellow);
+            outline-offset: 3px;
+        }
+
+        /* Prekės ženklo juosta — viršuje dešinėje */
+        .brand-header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 200;
+            padding: 18px 32px 18px 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+        .brand-header .brand-lockup {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: inherit;
+            border-radius: 12px;
+            padding: 6px 8px;
+            margin: -6px -8px;
+            transition: opacity 0.2s;
+        }
+        .brand-header .brand-lockup:hover { opacity: 0.9; }
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #050d14 0%, var(--primary-blue) 100%);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .brand-icon svg { width: 26px; height: 26px; display: block; }
+        .brand-wordmark {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            line-height: 1.12;
+        }
+        .brand-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(12px, 2vw, 17px);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .brand-name .brand-prompt { color: #f1f5f9; }
+        .brand-name .brand-anatomy { color: var(--accent-yellow); }
+        .brand-tagline {
+            font-size: clamp(11px, 1.15vw, 13px);
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            color: var(--text-soft);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Navigacija */
+        .nav-sidebar {
+            position: fixed;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 100;
+        }
+        .nav-mobile {
+            display: none;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+            background: rgba(7, 27, 41, 0.92);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+        }
+        .nav-mobile-inner {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            max-width: 100%;
+        }
+        button.nav-item {
+            width: 14px;
+            height: 14px;
+            padding: 0;
+            margin: 0;
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+        button.nav-item.active { background: var(--accent-yellow); border-color: var(--accent-yellow); transform: scale(1.45); box-shadow: 0 0 0 2px var(--bg-dark); }
+
+        /* Skaidrių bazė */
+        section {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 120px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        /* Tipografija */
+        h1 { font-family: var(--font-display); font-size: clamp(56px, 7.5vw, 104px); line-height: 0.92; margin: 0; font-weight: 700; }
+        h2 { font-family: var(--font-display); font-size: clamp(36px, 4.2vw, 56px); line-height: 1.12; margin-bottom: 24px; color: #fff; }
+        .hero-lead {
+            font-size: clamp(22px, 2.4vw, 32px);
+            margin-top: 28px;
+            color: var(--text-muted);
+            line-height: 1.45;
+            max-width: 22em;
+        }
+        .essence-primary-headline {
+            font-family: var(--font-display);
+            font-size: clamp(40px, 6vw, 78px);
+            line-height: 1.05;
+            margin: 0 0 8px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .essence-lead {
+            font-size: clamp(22px, 2.6vw, 36px);
+            color: var(--text-muted);
+            margin: 0 auto;
+            line-height: 1.45;
+            max-width: 28em;
+        }
+        .essence-lead strong { color: var(--text-bright); font-weight: 700; }
+        .cta-sub {
+            font-size: clamp(20px, 2vw, 28px);
+            margin-bottom: 50px;
+            color: var(--text-muted);
+            line-height: 1.45;
+            max-width: 32em;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-foot {
+            margin-top: 80px;
+            font-size: clamp(13px, 1.2vw, 15px);
+            letter-spacing: 0.12em;
+            color: var(--text-soft);
+        }
+        .label { 
+            color: var(--accent-red); 
+            text-transform: uppercase; 
+            letter-spacing: 4px; 
+            font-weight: 800; 
+            font-size: clamp(13px, 1.1vw, 15px); 
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Prompt Kortelė */
+        .prompt-editor {
+            background: #000;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+        .prompt-editor::before {
+            content: 'UŽKLAUSOS STRUKTŪRA';
+            position: absolute;
+            top: -12px; right: 20px;
+            background: var(--accent-yellow);
+            color: #000;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 4px;
+            letter-spacing: 0.04em;
+        }
+        .prompt-line {
+            margin-bottom: 15px;
+            font-family: ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+            font-size: clamp(15px, 1.05vw, 18px);
+            line-height: 1.55;
+            user-select: text;
+            color: var(--text-body);
+        }
+        .prompt-line b { color: var(--accent-yellow); display: block; font-size: clamp(12px, 0.95vw, 14px); margin-bottom: 5px; font-weight: 800; letter-spacing: 0.06em; opacity: 1; }
+
+        .copy-prompt-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px 20px;
+            font-family: var(--font-main);
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+            background: var(--accent-yellow);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .copy-prompt-btn:hover { box-shadow: 0 8px 24px rgba(251, 211, 4, 0.35); }
+        .copy-prompt-btn:active { transform: scale(0.98); }
+
+        h2.essence-tagline {
+            font-family: var(--font-display);
+            font-size: clamp(44px, 7.5vw, 104px);
+            line-height: 0.92;
+            margin: 0 0 40px;
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+        h2.cta-title {
+            font-family: var(--font-display);
+            font-size: clamp(44px, 7vw, 100px);
+            line-height: 0.92;
+            margin: 0 0 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Iliustracijos (SVG) */
+        .viz-container {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .viz-svg { width: 100%; height: 100%; }
+
+        /* Badge / Rezultatas */
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 90, 95, 0.14);
+            color: #ff7a7e;
+            padding: 14px 26px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: clamp(14px, 1vw, 16px);
+            margin-top: 30px;
+            border: 1px solid rgba(255, 90, 95, 0.35);
+        }
+
+        /* CTA */
+        .cta-btn {
+            background: var(--accent-red);
+            color: white;
+            padding: 24px 56px;
+            font-size: clamp(18px, 1.6vw, 24px);
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            transition: 0.3s;
+            box-shadow: 0 20px 40px rgba(255, 90, 95, 0.3);
+        }
+        .cta-btn:hover { transform: translateY(-5px); box-shadow: 0 30px 50px rgba(255, 90, 95, 0.5); }
+
+        .cta-community {
+            margin: 40px 0 0;
+            padding: 0 16px;
+        }
+        .cta-telegram-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: clamp(15px, 1.2vw, 18px);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.4);
+            padding-bottom: 2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .cta-telegram-link:hover { color: var(--accent-yellow); border-color: var(--accent-yellow); }
+        .cta-telegram-link .fa-telegram { font-size: 1.25em; color: #2aabee; }
+
+        /* Pagrindiniai užklausų tipai (skaidrė 2) */
+        .types-slide .container {
+            max-width: 1180px;
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .types-head { margin-bottom: 4px; }
+        .types-head h2 { margin-bottom: 10px; }
+        .types-lead {
+            color: var(--text-muted);
+            font-size: clamp(16px, 1.25vw, 19px);
+            line-height: 1.5;
+            max-width: 34em;
+            margin: 0 auto;
+        }
+        .types-lead strong { color: var(--text-bright); font-weight: 700; }
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            text-align: left;
+            margin-top: 22px;
+        }
+        .types-card {
+            background: rgba(255, 255, 255, 0.035);
+            border-radius: 12px;
+            padding: 18px 16px;
+            border: 2px solid;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .types-card--sys { border-color: var(--primary-blue); }
+        .types-card--ctx { border-color: #0d9488; }
+        .types-card--role { border-color: var(--accent-red); }
+        .types-card h3 {
+            font-family: var(--font-display);
+            font-size: clamp(14px, 1.05vw, 16px);
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            margin: 0;
+            color: var(--text-bright);
+        }
+        .types-card-desc {
+            font-size: clamp(13px, 1vw, 15px);
+            line-height: 1.5;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        .types-card-k {
+            font-size: clamp(11px, 0.85vw, 12px);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-yellow);
+            margin: 2px 0 0;
+        }
+        .types-example-block {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .types-card-example {
+            font-size: clamp(13px, 0.95vw, 14px);
+            line-height: 1.5;
+            color: var(--text-body);
+            font-style: italic;
+            margin: 0;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 8px;
+            border-left: 3px solid rgba(251, 211, 4, 0.55);
+            user-select: text;
+        }
+        .types-copy-btn {
+            align-self: flex-start;
+            padding: 10px 16px;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-yellow);
+            background: transparent;
+            border: 1px solid rgba(251, 211, 4, 0.45);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .types-copy-btn:hover {
+            background: rgba(251, 211, 4, 0.12);
+            color: #fff6b0;
+        }
+        .types-card-result {
+            font-size: clamp(13px, 0.95vw, 14px);
+            line-height: 1.45;
+            color: var(--text-soft);
+            margin: 0;
+        }
+        .types-card-result strong { color: var(--text-muted); }
+        .types-tip {
+            margin-top: 24px;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, rgba(16, 59, 90, 0.45), rgba(255, 90, 95, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            text-align: left;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .types-tip i {
+            color: var(--accent-yellow);
+            font-size: 20px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+        .types-tip p { margin: 0; font-size: clamp(14px, 1.05vw, 16px); line-height: 1.55; color: var(--text-body); }
+
+        /* Roadmap: 5 val./sav. — kelias (skaidrė 3) */
+        .roadmap-slide .container {
+            max-width: 560px;
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .roadmap-inner { width: 100%; margin: 0 auto; }
+        .roadmap-sub {
+            color: var(--text-muted);
+            font-size: clamp(15px, 1.15vw, 18px);
+            line-height: 1.45;
+            max-width: 28em;
+            margin: 0 auto 20px;
+        }
+        .roadmap-journey {
+            position: relative;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 440px;
+            padding: 6px 0 6px 0;
+        }
+        .roadmap-journey-line {
+            position: absolute;
+            left: 9px;
+            top: 14px;
+            bottom: 14px;
+            width: 3px;
+            border-radius: 3px;
+            background: linear-gradient(
+                180deg,
+                var(--accent-yellow) 0%,
+                var(--primary-blue) 48%,
+                var(--accent-red) 100%
+            );
+            opacity: 0.9;
+        }
+        .roadmap-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 6px;
+            min-height: 38px;
+            position: relative;
+            z-index: 1;
+        }
+        .roadmap-row:last-child { margin-bottom: 0; }
+        .roadmap-row:last-child .roadmap-dot {
+            background: var(--accent-red);
+            box-shadow: 0 0 0 3px var(--bg-dark), 0 0 12px rgba(255, 90, 95, 0.45);
+        }
+        .roadmap-dot-wrap {
+            width: 22px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .roadmap-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--accent-yellow);
+            box-shadow: 0 0 0 3px var(--bg-dark);
+        }
+        .roadmap-name {
+            flex: 1;
+            font-family: var(--font-display);
+            font-size: clamp(15px, 1.15vw, 17px);
+            font-weight: 600;
+            color: var(--text-bright);
+            line-height: 1.25;
+        }
+        .roadmap-time {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(14px, 1.05vw, 16px);
+            color: var(--accent-yellow);
+            font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
+            min-width: 4.5em;
+            text-align: right;
+        }
+        .roadmap-total {
+            margin-top: 20px;
+            padding: 14px 18px;
+            background: rgba(251, 211, 4, 0.1);
+            border: 1px solid rgba(251, 211, 4, 0.35);
+            border-radius: 10px;
+            font-family: var(--font-display);
+            font-size: clamp(18px, 2.8vw, 24px);
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+        /* Promptų anatomijos schema (skaidrė prieš paskutinį šabloną) */
+        .schema-section .container {
+            max-width: 1100px;
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .schema-inner {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .schema-lead {
+            font-size: clamp(16px, 1.25vw, 19px);
+            color: var(--text-muted);
+            max-width: 36em;
+            margin: 0 auto 36px;
+            line-height: 1.55;
+        }
+        .schema-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 28px minmax(200px, 260px);
+            gap: 20px 16px;
+            align-items: stretch;
+            text-align: left;
+        }
+        .schema-column-flow {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            padding-left: 24px;
+        }
+        .schema-step {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 14px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        }
+        .schema-step-num {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 18px;
+            opacity: 0.85;
+            flex-shrink: 0;
+            min-width: 1.25em;
+        }
+        .schema-step-body {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: clamp(14px, 1.05vw, 16px);
+            line-height: 1.5;
+            color: #0f172a;
+        }
+        .schema-step-body strong {
+            font-size: clamp(13px, 0.95vw, 14px);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .schema-step--neutral {
+            background: #e8eef4;
+        }
+        .schema-step--neutral .schema-step-num { color: #0f172a; }
+        .schema-step--reason {
+            background: linear-gradient(135deg, #0d9488 0%, #047857 100%);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .schema-step--reason .schema-step-num { color: rgba(255, 255, 255, 0.9); }
+        .schema-step--reason .schema-step-body { color: #ecfdf5; }
+        .schema-step--reason .schema-step-body strong { color: #fff; }
+        .schema-step--qc {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #0c2d45 100%);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .schema-step--qc .schema-step-num { color: rgba(255, 255, 255, 0.9); }
+        .schema-step--qc .schema-step-body { color: #e0f2fe; }
+        .schema-step--qc .schema-step-body strong { color: #fff; }
+        .schema-arrow {
+            width: 100%;
+            max-width: 340px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.35);
+        }
+        .schema-arrow svg { width: 20px; height: 20px; }
+        .schema-loop-svg {
+            position: absolute;
+            left: -6px;
+            top: 42%;
+            width: 36px;
+            height: 42%;
+            min-height: 180px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .schema-loop-svg path {
+            fill: none;
+            stroke: var(--primary-blue);
+            stroke-width: 2.5;
+            opacity: 0.85;
+        }
+        .schema-bracket svg {
+            width: 100%;
+            height: 100%;
+            min-height: 420px;
+            stroke: rgba(255, 255, 255, 0.35);
+            fill: none;
+            stroke-width: 2;
+        }
+        .schema-advanced {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+            align-self: center;
+        }
+        .schema-advanced strong {
+            font-family: var(--font-display);
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #f1f5f9;
+        }
+        .schema-advanced p {
+            margin: 0;
+            font-size: clamp(14px, 1.05vw, 16px);
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+        .schema-foot {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .schema-foot a {
+            color: var(--text-muted);
+            font-size: clamp(15px, 1.1vw, 17px);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.45);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .schema-foot a:hover { color: var(--accent-yellow); border-color: var(--accent-yellow); }
+
+        /* Essence Slide */
+        .essence-content {
+            text-align: center;
+            max-width: 900px;
+        }
+        .square-circle-loop {
+            width: 200px; height: 200px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+        .loop-sq { width: 150px; height: 150px; border: 4px solid var(--accent-yellow); position: absolute; top: 0; left: 0; animation: spin 10s linear infinite; }
+        .loop-ci { width: 150px; height: 150px; border: 4px solid var(--accent-red); border-radius: 50%; position: absolute; bottom: 0; right: 0; animation: spin 10s linear infinite reverse; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Quiz skaidrė */
+        .quiz-slide .container {
+            max-width: 680px;
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .quiz-inner {
+            width: 100%;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .quiz-fieldset {
+            border: none;
+            margin: 0;
+            padding: 0;
+            min-width: 0;
+        }
+        .quiz-fieldset .label {
+            display: block;
+            text-align: center;
+        }
+        .quiz-question {
+            font-family: var(--font-display);
+            font-size: clamp(22px, 2.5vw, 30px);
+            line-height: 1.22;
+            color: #fff;
+            margin: 0 auto 24px;
+            max-width: 28em;
+            text-align: center;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .quiz-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .quiz-option:hover {
+            border-color: rgba(251, 211, 4, 0.35);
+            background: rgba(255, 255, 255, 0.055);
+        }
+        .quiz-option:has(input:focus-visible) {
+            outline: 2px solid var(--accent-yellow);
+            outline-offset: 2px;
+        }
+        .quiz-option input {
+            margin-top: 4px;
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-yellow);
+        }
+        .quiz-option-text {
+            font-size: clamp(15px, 1.15vw, 17px);
+            line-height: 1.45;
+            color: var(--text-body);
+        }
+        .quiz-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+            justify-content: center;
+        }
+        .quiz-check-btn {
+            padding: 14px 28px;
+            font-family: var(--font-main);
+            font-size: 16px;
+            font-weight: 700;
+            color: #000;
+            background: var(--accent-yellow);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .quiz-check-btn:hover { box-shadow: 0 8px 24px rgba(251, 211, 4, 0.35); }
+        .quiz-check-btn:active { transform: scale(0.98); }
+        .quiz-reset-btn {
+            padding: 14px 24px;
+            font-family: var(--font-main);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .quiz-reset-btn:hover { color: var(--text-bright); border-color: rgba(255, 255, 255, 0.22); }
+        .quiz-feedback {
+            margin-top: 22px;
+            padding: 18px 20px;
+            border-radius: 10px;
+            text-align: left;
+            border: 1px solid var(--border);
+            display: none;
+        }
+        .quiz-feedback.is-visible { display: block; }
+        .quiz-feedback--ok {
+            background: rgba(251, 211, 4, 0.1);
+            border-color: rgba(251, 211, 4, 0.4);
+        }
+        .quiz-feedback--no {
+            background: rgba(255, 90, 95, 0.1);
+            border-color: rgba(255, 90, 95, 0.35);
+        }
+        .quiz-feedback--hint {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border);
+        }
+        .quiz-feedback-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: clamp(17px, 1.4vw, 20px);
+            margin: 0 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .quiz-feedback--ok .quiz-feedback-title { color: var(--accent-yellow); }
+        .quiz-feedback--no .quiz-feedback-title { color: #ff7a7e; }
+        .quiz-feedback--hint .quiz-feedback-title { color: var(--text-muted); }
+        .quiz-feedback-body {
+            margin: 0;
+            font-size: clamp(15px, 1.1vw, 17px);
+            line-height: 1.55;
+            color: var(--text-body);
+        }
+        .quiz-feedback--hint .quiz-feedback-body { color: var(--text-muted); }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { scroll-behavior: auto !important; }
+            .loop-sq, .loop-ci { animation: none !important; }
+        }
+
+        @media (max-width: 1024px) {
+            .container { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+            section { padding: 40px 20px 100px; }
+            .nav-sidebar { display: none; }
+            .nav-mobile { display: flex; }
+            body { padding-bottom: 72px; }
+            .prompt-editor { text-align: left; }
+            h1 { font-size: clamp(48px, 12vw, 80px); }
+            h2 { font-size: clamp(32px, 8vw, 44px); }
+            h2.essence-tagline { font-size: clamp(40px, 11vw, 72px); }
+            h2.cta-title { font-size: clamp(40px, 11vw, 72px); }
+            .nav-mobile button.nav-item {
+                width: 16px;
+                height: 16px;
+                border-width: 3px;
+            }
+            .brand-header {
+                padding: 12px 14px 12px 12px;
+            }
+            .brand-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+            .brand-icon svg { width: 22px; height: 22px; }
+            .schema-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .schema-column-flow { margin: 0 auto; padding-left: 0; }
+            .schema-bracket { display: none; }
+            .schema-loop-svg { display: none; }
+            .schema-advanced {
+                max-width: 340px;
+                margin: 20px auto 0;
+                text-align: left;
+            }
+            .schema-lead { font-size: 16px; }
+            .types-grid { grid-template-columns: 1fr; }
+            .types-lead { font-size: 16px; }
+            .roadmap-name { font-size: 14px; }
+            .roadmap-time { font-size: 13px; min-width: 4em; }
+            .quiz-question { font-size: clamp(18px, 4.5vw, 26px); }
+        }
+        @media (max-width: 480px) {
+            .brand-name { white-space: normal; text-align: right; max-width: 9.5em; }
+            .brand-tagline { letter-spacing: 0.14em; }
+        }
+    </style>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Pereiti prie turinio</a>
+
+<header class="brand-header" role="banner">
+    <a class="brand-lockup" href="https://promptanatomy.app" target="_blank" rel="noopener noreferrer" aria-label="Promptų anatomija — DI veikimo sistema. Atverti svetainę">
+        <div class="brand-icon" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path fill="#fbd304" d="M13.5 1.5 4.5 14.25h6L8.25 22.5 19.5 9.75h-6L13.5 1.5z"/>
+            </svg>
+        </div>
+        <div class="brand-wordmark">
+            <div class="brand-name"><span class="brand-prompt">PROMPTŲ</span> <span class="brand-anatomy">ANATOMIJA</span></div>
+            <div class="brand-tagline">DI veikimo sistema</div>
+        </div>
+    </a>
+</header>
+
+<nav class="nav-sidebar" aria-label="Skaidrių navigacija">
+    <button type="button" class="nav-item active" aria-label="Skaidrė 1: Įvadas" aria-current="true"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 2: Pagrindiniai užklausų tipai"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 3: Jūsų kelias, kaip sutaupyti iki 5 val. per savaitę"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 4: Pamokos architektas"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 5: Diferencijavimo variklis"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 6: Vertinimo sistema"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 7: Užduočių generatorius"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 8: Komunikacijos asistentas"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 9: Promptų anatomijos schema"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 10: Patikros protokolas"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 11: Esmė"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 12: Trumpas quiz"></button>
+    <button type="button" class="nav-item" aria-label="Skaidrė 13: Pradėti"></button>
+</nav>
+
+<nav class="nav-mobile" aria-label="Skaidrių navigacija (mobilusis)">
+    <div class="nav-mobile-inner">
+        <button type="button" class="nav-item active" aria-label="Skaidrė 1: Įvadas" aria-current="true"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 2: Pagrindiniai užklausų tipai"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 3: Jūsų kelias, kaip sutaupyti iki 5 val. per savaitę"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 4: Pamokos architektas"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 5: Diferencijavimo variklis"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 6: Vertinimo sistema"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 7: Užduočių generatorius"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 8: Komunikacijos asistentas"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 9: Promptų anatomijos schema"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 10: Patikros protokolas"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 11: Esmė"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 12: Trumpas quiz"></button>
+        <button type="button" class="nav-item" aria-label="Skaidrė 13: Pradėti"></button>
+    </div>
+</nav>
+
+<main id="main-content">
+
+<!-- Skaidrė 1: įvadas -->
+<section aria-label="Įvadas" style="background: radial-gradient(circle at 80% 20%, rgba(251, 211, 4, 0.05), transparent 50%);">
+    <div class="container">
+        <div>
+            <span class="label">Apvalaus Kvadrato Mokykla</span>
+            <h1>PROMPTŲ<br><span style="color: var(--accent-yellow);">ANATOMIJA</span></h1>
+            <p class="hero-lead">Nuo atsitiktinių atsakymų iki pilnos sistemos. Susigrąžinkite 5 valandas per savaitę.</p>
+        </div>
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <rect x="100" y="100" width="200" height="200" fill="none" stroke="var(--accent-yellow)" stroke-width="4" />
+                <circle cx="200" cy="200" r="100" fill="none" stroke="var(--accent-red)" stroke-width="4" />
+                <path d="M200 100 V300 M100 200 H300" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 2: užklausų tipai mokytojui -->
+<section class="types-slide" aria-label="Pagrindiniai užklausų tipai">
+    <div class="container">
+        <div class="types-head">
+            <span class="label">Teorija trumpai</span>
+            <h2>Pagrindiniai užklausų tipai</h2>
+            <p class="types-lead">Trys sluoksniai vienoje užklausoje: <strong>sistema</strong>, <strong>kontekstas</strong>, <strong>tonas</strong>.</p>
+        </div>
+        <div class="types-grid">
+            <article class="types-card types-card--sys">
+                <h3>Sisteminės užklausos</h3>
+                <p class="types-card-desc">Koks DI vaidmuo ugdyme ir kokį atsakymo tikslą nustatote.</p>
+                <p class="types-card-k">Pavyzdys</p>
+                <div class="types-example-block">
+                    <p class="types-card-example">„Tu esi matematikos mokytojas, kuris rengia aiškius, su 8 klase pritaikytus paaiškinimus be perteklinio žargono.“</p>
+                    <button type="button" class="types-copy-btn" data-copy-text="Tu esi matematikos mokytojas, kuris rengia aiškius, su 8 klase pritaikytus paaiškinimus be perteklinio žargono." aria-label="Kopijuoti sisteminės užklausos pavyzdį">Kopijuoti pavyzdį</button>
+                </div>
+                <p class="types-card-k">Ką gaunate</p>
+                <p class="types-card-result">Mažiau bendrinių frazių — atsakymas laikosi mokytojo logikos ir tikslo.</p>
+            </article>
+            <article class="types-card types-card--ctx">
+                <h3>Kontekstinės užklausos</h3>
+                <p class="types-card-desc">Klasė, tema, laikas, ką mokiniai jau žino, kokiu šaltiniu remiatės.</p>
+                <p class="types-card-k">Pavyzdys</p>
+                <div class="types-example-block">
+                    <p class="types-card-example">„Paruošk 45 min. įvadinę pamoką apie taisyklingąjį daugiakampį 8 klasei. Jie jau moka matuoti ir skaičiuoti kampus daugiakampyje.“</p>
+                    <button type="button" class="types-copy-btn" data-copy-text="Paruošk 45 min. įvadinę pamoką apie taisyklingąjį daugiakampį 8 klasei. Jie jau moka matuoti ir skaičiuoti kampus daugiakampyje." aria-label="Kopijuoti kontekstinės užklausos pavyzdį">Kopijuoti pavyzdį</button>
+                </div>
+                <p class="types-card-k">Ką gaunate</p>
+                <p class="types-card-result">Turinys susietas su jūsų klase ir tema, ne su abstrakčia santrauka.</p>
+            </article>
+            <article class="types-card types-card--role">
+                <h3>Vaidmens ir tono užklausos</h3>
+                <p class="types-card-desc">Kaip kalbėti: auditorija (mokinys, tėvai, kolegos), tonas, paprastumas.</p>
+                <p class="types-card-k">Pavyzdys</p>
+                <div class="types-example-block">
+                    <p class="types-card-example">„Rašyk taip, lyg kalbėtum su sumišusiu mokiniu: kantrybe, be kaltinimų, su vienu konkrečiu pavyzdžiu.“</p>
+                    <button type="button" class="types-copy-btn" data-copy-text="Rašyk taip, lyg kalbėtum su sumišusiu mokiniu: kantrybe, be kaltinimų, su vienu konkrečiu pavyzdžiu." aria-label="Kopijuoti tono ir vaidmens pavyzdį">Kopijuoti pavyzdį</button>
+                </div>
+                <p class="types-card-k">Ką gaunate</p>
+                <p class="types-card-result">Stilius atitinka situaciją — mažiau redagavimo prieš naudojant.</p>
+            </article>
+        </div>
+        <div class="types-tip">
+            <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+            <p><strong>Patarta.</strong> Vienoje užklausoje derink visus tris sluoksnius. Ypač naudinga planuojant pamoką, užduotį ar grįžtamąjį ryšį.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 3: roadmap 5 val. -->
+<section class="roadmap-slide" aria-label="Jūsų kelias, kaip sutaupyti iki 5 val. per savaitę">
+    <div class="container">
+        <div class="roadmap-inner">
+            <span class="label">Kelio planas</span>
+            <h2>Jūsų kelias, kaip sutaupyti iki 5 val. per savaitę</h2>
+            <p class="roadmap-sub">Šeši šablonai žemiau — eilė kaip skaidrėse, kairėn laikas, kurį orientaciškai susigrąžinate.</p>
+            <div class="roadmap-journey" role="list">
+                <div class="roadmap-journey-line" aria-hidden="true"></div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Pamokos architektas</span>
+                    <span class="roadmap-time">~90 min</span>
+                </div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Diferencijavimo variklis</span>
+                    <span class="roadmap-time">~45 min</span>
+                </div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Vertinimo sistema</span>
+                    <span class="roadmap-time">~60 min</span>
+                </div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Užduočių generatorius</span>
+                    <span class="roadmap-time">~45 min</span>
+                </div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Komunikacijos asistentas</span>
+                    <span class="roadmap-time">~30 min</span>
+                </div>
+                <div class="roadmap-row" role="listitem">
+                    <span class="roadmap-dot-wrap" aria-hidden="true"><span class="roadmap-dot"></span></span>
+                    <span class="roadmap-name">Patikros protokolas</span>
+                    <span class="roadmap-time">~30 min</span>
+                </div>
+            </div>
+            <div class="roadmap-total">Viso ≈ 5 val. / sav.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 4: pamokos architektas -->
+<section aria-label="Pamokos architektas">
+    <div class="container">
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <g stroke="var(--accent-yellow)" stroke-width="2" fill="none" opacity="0.6">
+                    <path d="M50 350 L350 350 V50 H50 Z" />
+                    <path d="M50 350 L200 50 L350 350" />
+                    <circle cx="200" cy="200" r="40" />
+                </g>
+                <rect x="180" y="180" width="40" height="40" fill="var(--accent-red)" />
+            </svg>
+        </div>
+        <div>
+            <span class="label">01 • Struktūra</span>
+            <h2>Pamokos Architektas</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi patyręs [dalyko] mokytojas ir ugdymo strategas.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> Sukurk 45 min planą tema [Tema], [Klasė]. Mokiniai jau žino [Tema].</div>
+                <div class="prompt-line"><b>REZULTATAS</b> Lentelė: Laikas | Veikla | Tikslas. Pridėk 3 diskusinius klausimus.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-bolt"></i> Pamoka paruošta per 30 sek.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 5: diferencijavimas -->
+<section aria-label="Diferencijavimo variklis">
+    <div class="container">
+        <div>
+            <span class="label">02 • Personalizacija</span>
+            <h2>Diferencijavimo Variklis</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi įtraukiojo ugdymo ekspertas.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> Klasėje yra skirtingo pajėgumo mokiniai. Tema: [Tema].</div>
+                <div class="prompt-line"><b>REZULTATAS</b> Pateik užduotį 3 lygiais: 1. Bazinis, 2. Vidutinis, 3. Pažengęs.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-layer-group"></i> Viena pamoka = visai klasei.</div>
+        </div>
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <rect x="100" y="280" width="200" height="40" fill="var(--accent-yellow)" opacity="0.3" />
+                <rect x="120" y="220" width="160" height="40" fill="var(--accent-yellow)" opacity="0.6" />
+                <rect x="140" y="160" width="120" height="40" fill="var(--accent-yellow)" />
+                <circle cx="200" cy="100" r="30" fill="var(--accent-red)" />
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 6: vertinimas -->
+<section aria-label="Vertinimo sistema">
+    <div class="container">
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <circle cx="200" cy="200" r="120" fill="none" stroke="var(--accent-yellow)" stroke-width="2" stroke-dasharray="10 5" />
+                <path d="M200 80 A120 120 0 0 1 320 200" stroke="var(--accent-red)" stroke-width="8" fill="none" />
+                <circle cx="320" cy="200" r="10" fill="var(--accent-red)" />
+            </svg>
+        </div>
+        <div>
+            <span class="label">03 • Grįžtamasis ryšys</span>
+            <h2>Vertinimo Sistema</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi profesionalus vertinimo ekspertas.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> Įvertink mokinio darbą: [Tekstas] pagal kriterijus: [Kriterijai].</div>
+                <div class="prompt-line"><b>REZULTATAS</b> Balas, 3 stiprios vietos ir 1 konkretus augimo patarimas.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-clock-rotate-left"></i> -50% taisymo laiko.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 7: užduotys -->
+<section aria-label="Užduočių generatorius">
+    <div class="container">
+        <div>
+            <span class="label">04 • Inovacijos</span>
+            <h2>Užduočių Generatorius</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi inovatyvių mokymo priemonių kūrėjas.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> Sukurk užduotį tema [Tema], [Klasė]. Naudok realaus gyvenimo pavyzdį.</div>
+                <div class="prompt-line"><b>REZULTATAS</b> Formatas: [žinių patikrinimas / praktinė užduotis]. Instrukcija mokiniui + atsakymų raktas.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-vial"></i> Tikros patirtys, o ne teorija.</div>
+        </div>
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <rect x="100" y="100" width="200" height="200" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+                <circle cx="150" cy="150" r="20" fill="var(--accent-yellow)" />
+                <circle cx="250" cy="250" r="20" fill="var(--accent-red)" />
+                <line x1="150" y1="150" x2="250" y2="250" stroke="white" stroke-width="2" />
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 8: komunikacija -->
+<section aria-label="Komunikacijos asistentas">
+    <div class="container">
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <path d="M100 150 L200 250 L300 150" stroke="var(--accent-yellow)" stroke-width="4" fill="none" />
+                <rect x="80" y="120" width="240" height="160" stroke="white" stroke-width="2" fill="none" />
+                <circle cx="320" cy="120" r="15" fill="var(--accent-red)" />
+            </svg>
+        </div>
+        <div>
+            <span class="label">05 • Komunikacija</span>
+            <h2>Komunikacijos Asistentas</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi profesionalus komunikacijos specialistas.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> Parašyk laišką tėvams apie [situacija]. Tonas: profesionalus, bet šiltas.</div>
+                <div class="prompt-line"><b>REZULTATAS</b> Laiškas iki 100 žodžių: Problema + Sprendimas + Kvietimas dialogui.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-paper-plane"></i> Aiški ir rami komunikacija.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 9: promptų anatomijos schema -->
+<section class="schema-section" aria-label="Promptų anatomijos schema">
+    <div class="container">
+        <div class="schema-inner">
+            <span class="label">06 • Visa sistema</span>
+            <h2>Promptų anatomija</h2>
+            <p class="schema-lead">Penki žingsniai nuo aiškaus vaidmens iki kokybės patikros. Mėlyna rodyklė rodo grįžtamąjį ryšį: vertinimas veda į mąstymo ir konteksto tikslinimą.</p>
+            <div class="schema-grid">
+                <div class="schema-column-flow">
+                    <svg class="schema-loop-svg" viewBox="0 0 40 200" preserveAspectRatio="none" aria-hidden="true">
+                        <path d="M 34 178 Q 6 142 6 100 Q 6 56 34 26" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="34" cy="24" r="4" fill="var(--primary-blue)" opacity="0.95" />
+                    </svg>
+                    <div class="schema-step schema-step--neutral">
+                        <span class="schema-step-num">1</span>
+                        <div class="schema-step-body">
+                            <strong>Vaidmuo</strong>
+                            <span>Kas ir kodėl — koks tavo vaidmuo ir ko sieki šia užklausa</span>
+                        </div>
+                    </div>
+                    <div class="schema-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M7 10l5 5 5-5H7z"/></svg>
+                    </div>
+                    <div class="schema-step schema-step--neutral">
+                        <span class="schema-step-num">2</span>
+                        <div class="schema-step-body">
+                            <strong>Kontekstas</strong>
+                            <span>Kokius faktus, tekstą ar sąlygas DI turi žinoti prieš atsakant</span>
+                        </div>
+                    </div>
+                    <div class="schema-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M7 10l5 5 5-5H7z"/></svg>
+                    </div>
+                    <div class="schema-step schema-step--reason">
+                        <span class="schema-step-num">3</span>
+                        <div class="schema-step-body">
+                            <strong>Mąstymas</strong>
+                            <span>Kaip samprotauti: žingsniai, logika, kriterijai</span>
+                        </div>
+                    </div>
+                    <div class="schema-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M7 10l5 5 5-5H7z"/></svg>
+                    </div>
+                    <div class="schema-step schema-step--neutral">
+                        <span class="schema-step-num">4</span>
+                        <div class="schema-step-body">
+                            <strong>Rezultatas</strong>
+                            <span>Kokį formatą ir turinį turi grąžinti atsakymas</span>
+                        </div>
+                    </div>
+                    <div class="schema-arrow" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M7 10l5 5 5-5H7z"/></svg>
+                    </div>
+                    <div class="schema-step schema-step--qc">
+                        <span class="schema-step-num">5</span>
+                        <div class="schema-step-body">
+                            <strong>Kokybės kontrolė</strong>
+                            <span>Patikrink, įvertink, palygink su tikslu — ir kartok ciklą</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="schema-bracket" aria-hidden="true">
+                    <svg viewBox="0 0 24 320" preserveAspectRatio="xMidYMid meet">
+                        <path d="M 4 8 Q 20 8 20 24 L 20 296 Q 20 312 4 312" />
+                    </svg>
+                </div>
+                <aside class="schema-advanced">
+                    <strong>Išplėstiniai parametrai</strong>
+                    <p>Visuotiniai nustatymai visai užklausai: tonas, apimtis, apribojimai, kalba — kaip „filtras“ virš visų penkių žingsnių.</p>
+                </aside>
+            </div>
+            <footer class="schema-foot">
+                <a href="https://promptanatomy.app" target="_blank" rel="noopener noreferrer">Valdykite užklausos rezultatą — promptanatomy.app</a>
+            </footer>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 10: DI turinio patikra -->
+<section aria-label="Patikros protokolas">
+    <div class="container">
+        <div>
+            <span class="label">07 • Atsakingas naudojimas</span>
+            <h2>Patikros Protokolas</h2>
+            <div class="prompt-editor">
+                <div class="prompt-line"><b>VAIDMUO</b> Tu esi atsakingas pedagogas ir informacijos kritikas, žinantis, kad DI gali klysti ar pateikti išgalvotą turinį.</div>
+                <div class="prompt-line"><b>KONTEKSTAS</b> DI sugeneruotas tekstas bus naudojamas [pamokoje / laiške / užduotyje / teste]. Dalykas: [Dalykas], klasė: [Klasė]. Štai tekstas: [Įklijuok DI atsakymą].</div>
+                <div class="prompt-line"><b>REZULTATAS</b> 1) Galimos faktinės ar metodinės problemos (iki 3 punktų). 2) Kas gali būti naudojama be pakeitimų. 3) Ką privalau pats patikrinti patikimu šaltiniu prieš rodant mokiniams. 4) Viena pastaba apie asmens duomenis ar šališkumą, jei aktualu.</div>
+                <button type="button" class="copy-prompt-btn">Kopijuoti užklausą</button>
+            </div>
+            <div class="result-badge"><i class="fa-solid fa-shield-halved"></i> Mažiau rizikos klasėje.</div>
+        </div>
+        <div class="viz-container">
+            <svg class="viz-svg" viewBox="0 0 400 400">
+                <path d="M200 55 L330 105 V215 Q330 295 200 355 Q70 295 70 215 V105 Z" fill="none" stroke="var(--accent-yellow)" stroke-width="3" />
+                <path d="M145 205 L180 248 L265 145" stroke="var(--accent-red)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="200" cy="200" r="118" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+            </svg>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 11: esmė -->
+<section aria-label="Esmė">
+    <div class="essence-content">
+        <div class="square-circle-loop">
+            <div class="loop-sq"></div>
+            <div class="loop-ci"></div>
+        </div>
+        <h2 class="essence-primary-headline">DI NĖRA ĮRANKIS.</h2>
+        <h2 class="essence-tagline">TAI SISTEMA.</h2>
+        <p class="essence-lead">
+            Geresni atsakymai ateina ne iš technologijos, o iš tavo gebėjimo ją <strong>struktūruoti</strong>.
+        </p>
+    </div>
+</section>
+
+<!-- Skaidrė 12: trumpas quiz -->
+<section class="quiz-slide" aria-label="Trumpas quiz">
+    <div class="container">
+        <div class="quiz-inner">
+            <form id="prompt-quiz-form" novalidate
+                data-msg-select="Pasirinkite vieną variantą ir spauskite Tikrinti."
+                data-feedback-correct="Vaidmuo, kontekstas ir aiškiai apibrėžtas rezultatas leidžia DI atsakyti pagal jūsų pamokos logiką — tai atitinka promptų anatomijos šablonus."
+                data-feedback-wrong="Be aiškaus vaidmens ir konkretaus konteksto DI spėlioja. Vien tik prašymas būti kūrybingam, tonas ar labai trumpa užklausa neperduoda, kokio turinio ir formato tikitės.">
+                <fieldset class="quiz-fieldset">
+                    <legend class="label">Patikrinkite supratimą</legend>
+                    <h2 class="quiz-question" id="quiz-question-heading">Ką verta aiškiai įtraukti į užklausą, kad DI atsakymas būtų naudingas pamokai?</h2>
+                    <ul class="quiz-options">
+                        <li>
+                            <label class="quiz-option" for="quiz-opt-a">
+                                <input type="radio" name="prompt-quiz" id="quiz-opt-a" value="a" data-correct="false">
+                                <span class="quiz-option-text">Kuo ilgesnis laiškas DI, tuo geresnis bus atsakymas — svarbu tik apimtis.</span>
+                            </label>
+                        </li>
+                        <li>
+                            <label class="quiz-option" for="quiz-opt-b">
+                                <input type="radio" name="prompt-quiz" id="quiz-opt-b" value="b" data-correct="false">
+                                <span class="quiz-option-text">Užtenka vienos eilutės, pvz. „Paruošk pamoką apie…“ — be klasės, tikslo ir pageidaujamo rezultato.</span>
+                            </label>
+                        </li>
+                        <li>
+                            <label class="quiz-option" for="quiz-opt-c">
+                                <input type="radio" name="prompt-quiz" id="quiz-opt-c" value="c" data-correct="false">
+                                <span class="quiz-option-text">Tik prašymas „būk kūrybingas ir pateik įdomiai“, be struktūros ir temos detalių.</span>
+                            </label>
+                        </li>
+                        <li>
+                            <label class="quiz-option" for="quiz-opt-d">
+                                <input type="radio" name="prompt-quiz" id="quiz-opt-d" value="d" data-correct="true">
+                                <span class="quiz-option-text">Vaidmuo (kas esi ir ko sieki), kontekstas (klasė, tema, ką mokiniai jau žino) ir pageidaujamas rezultato formatas.</span>
+                            </label>
+                        </li>
+                        <li>
+                            <label class="quiz-option" for="quiz-opt-e">
+                                <input type="radio" name="prompt-quiz" id="quiz-opt-e" value="e" data-correct="false">
+                                <span class="quiz-option-text">Pakanka nurodyti tik bendrą toną (draugiškas ar formalus), be temos, klasės ir norimo formato.</span>
+                            </label>
+                        </li>
+                    </ul>
+                </fieldset>
+                <div class="quiz-actions">
+                    <button type="button" class="quiz-check-btn" id="quiz-check-btn">Tikrinti</button>
+                    <button type="button" class="quiz-reset-btn" id="quiz-reset-btn" hidden>Bandyti dar kartą</button>
+                </div>
+                <div id="quiz-feedback" class="quiz-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Skaidrė 13: raginimas veikti -->
+<section aria-label="Pradėti" style="background: linear-gradient(to bottom, var(--bg-dark), var(--primary-blue));">
+    <div style="text-align: center;">
+        <h2 class="cta-title">VALDYKITE PROCESĄ</h2>
+        <p class="cta-sub">Išmokite promptų anatomijos ir susigrąžinkite savo laiką.</p>
+        <a href="https://ditreneris.github.io/mokytojas/" class="cta-btn" target="_blank" rel="noopener noreferrer">PRADĖTI: DI Pamokų Kūrėjas</a>
+        <p class="cta-community">
+            <a href="https://t.me/prompt_anatomy" class="cta-telegram-link" target="_blank" rel="noopener noreferrer" aria-label="Bendruomenės Telegram kanalas Prompt Anatomy (atidaryti naujame skirtuke)">
+                <i class="fa-brands fa-telegram" aria-hidden="true"></i>
+                Bendruomenės „Telegram“ kanalas
+            </a>
+        </p>
+        <div class="cta-foot">
+            APVALAUS KVADRATO MOKYKLA • 2026
+        </div>
+    </div>
+</section>
+
+</main>
+
+<script>
+    (function () {
+        const sections = document.querySelectorAll('main section');
+        const sideNav = document.querySelectorAll('.nav-sidebar .nav-item');
+        const mobileNav = document.querySelectorAll('.nav-mobile .nav-item');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const scrollOpts = { behavior: prefersReducedMotion ? 'auto' : 'smooth' };
+
+        function setActiveNav(index) {
+            sideNav.forEach((el, i) => {
+                const on = i === index;
+                el.classList.toggle('active', on);
+                if (on) el.setAttribute('aria-current', 'true');
+                else el.removeAttribute('aria-current');
+            });
+            mobileNav.forEach((el, i) => {
+                const on = i === index;
+                el.classList.toggle('active', on);
+                if (on) el.setAttribute('aria-current', 'true');
+                else el.removeAttribute('aria-current');
+            });
+        }
+
+        function bindNav(navButtons) {
+            navButtons.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    sections[index].scrollIntoView(scrollOpts);
+                });
+            });
+        }
+
+        bindNav(sideNav);
+        bindNav(mobileNav);
+
+        window.addEventListener('scroll', () => {
+            let current = 0;
+            const y = window.scrollY || window.pageYOffset;
+            sections.forEach((section, index) => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (y >= sectionTop - sectionHeight / 3) {
+                    current = index;
+                }
+            });
+            setActiveNav(current);
+        });
+
+        async function copyPromptText(text, btn) {
+            const original = btn.textContent;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.setAttribute('readonly', '');
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+                btn.textContent = 'Nukopijuota!';
+                setTimeout(() => { btn.textContent = original; }, 2000);
+            } catch (e) {
+                btn.textContent = 'Nepavyko — naudokite naršyklėje HTTPS arba vietinį serverį';
+                setTimeout(() => { btn.textContent = original; }, 4000);
+            }
+        }
+
+        document.querySelectorAll('.prompt-editor').forEach((editor) => {
+            const btn = editor.querySelector('.copy-prompt-btn');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                const lines = Array.from(editor.querySelectorAll('.prompt-line')).map((l) =>
+                    l.textContent.trim().replace(/\s+/g, ' ')
+                );
+                copyPromptText(lines.join('\n\n'), btn);
+            });
+        });
+
+        document.querySelectorAll('.types-copy-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const text = btn.getAttribute('data-copy-text');
+                if (text) copyPromptText(text, btn);
+            });
+        });
+
+        const quizForm = document.getElementById('prompt-quiz-form');
+        if (quizForm) {
+            const checkBtn = document.getElementById('quiz-check-btn');
+            const resetBtn = document.getElementById('quiz-reset-btn');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const correctBody = quizForm.getAttribute('data-feedback-correct') || '';
+            const wrongBody = quizForm.getAttribute('data-feedback-wrong') || '';
+            const selectMsg = quizForm.getAttribute('data-msg-select') || 'Pasirinkite variantą.';
+
+            function hideFeedback() {
+                feedbackEl.classList.remove('is-visible', 'quiz-feedback--ok', 'quiz-feedback--no', 'quiz-feedback--hint');
+                feedbackEl.innerHTML = '';
+                resetBtn.hidden = true;
+            }
+
+            function showResult(ok, bodyText) {
+                feedbackEl.classList.remove('quiz-feedback--ok', 'quiz-feedback--no', 'quiz-feedback--hint');
+                feedbackEl.classList.add('is-visible', ok ? 'quiz-feedback--ok' : 'quiz-feedback--no');
+                const title = document.createElement('div');
+                title.className = 'quiz-feedback-title';
+                const icon = document.createElement('i');
+                icon.className = ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark';
+                icon.setAttribute('aria-hidden', 'true');
+                title.appendChild(icon);
+                title.appendChild(document.createTextNode(' ' + (ok ? 'Teisingai' : 'Ne visai')));
+                const p = document.createElement('p');
+                p.className = 'quiz-feedback-body';
+                p.textContent = bodyText;
+                feedbackEl.innerHTML = '';
+                feedbackEl.appendChild(title);
+                feedbackEl.appendChild(p);
+                resetBtn.hidden = false;
+            }
+
+            checkBtn.addEventListener('click', () => {
+                const sel = quizForm.querySelector('input[name="prompt-quiz"]:checked');
+                if (!sel) {
+                    feedbackEl.classList.remove('quiz-feedback--ok', 'quiz-feedback--no');
+                    feedbackEl.classList.add('is-visible', 'quiz-feedback--hint');
+                    const title = document.createElement('div');
+                    title.className = 'quiz-feedback-title';
+                    title.textContent = 'Pasirinkite variantą';
+                    const p = document.createElement('p');
+                    p.className = 'quiz-feedback-body';
+                    p.textContent = selectMsg;
+                    feedbackEl.innerHTML = '';
+                    feedbackEl.appendChild(title);
+                    feedbackEl.appendChild(p);
+                    resetBtn.hidden = true;
+                    return;
+                }
+                const ok = sel.getAttribute('data-correct') === 'true';
+                showResult(ok, ok ? correctBody : wrongBody);
+            });
+
+            resetBtn.addEventListener('click', () => {
+                quizForm.querySelectorAll('input[name="prompt-quiz"]').forEach((r) => { r.checked = false; });
+                hideFeedback();
+            });
+        }
+
+        window.addEventListener('load', () => window.dispatchEvent(new Event('scroll')));
+    })();
+</script>
+
+</body>
+</html>
